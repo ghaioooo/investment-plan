@@ -1,0 +1,1043 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dynamic Financial Investment Plan - Improved</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.min.js"></script>
+
+<!-- Improved CSS Structure -->
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/components.css">
+<link rel="stylesheet" href="css/utilities.css">
+
+<!-- Additional CSS for new features -->
+<style>
+/* Error handling styles */
+.error-message {
+  color: var(--red);
+  font-size: 12px;
+  margin-top: 4px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  animation: fadeIn 0.3s ease;
+}
+
+.error-message::before {
+  content: '!';
+  background: var(--red);
+  color: white;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: bold;
+}
+
+.error {
+  border-color: var(--red) !important;
+  box-shadow: 0 0 0 2px rgba(255,77,77,0.1) !important;
+}
+
+.error:focus {
+  border-color: var(--red) !important;
+  box-shadow: 0 0 0 3px rgba(255,77,77,0.2) !important;
+}
+
+/* Success notification styles */
+.success-notification {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background: var(--green);
+  color: white;
+  padding: 16px 24px;
+  border-radius: var(--border-radius-md);
+  box-shadow: 0 8px 24px rgba(0,211,149,0.3);
+  z-index: 1000;
+  animation: slideInRight 0.3s ease;
+  max-width: 300px;
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* Improved mobile responsiveness */
+@media (max-width: 480px) {
+  .container {
+    padding: 16px 12px;
+  }
+  
+  .header h1 {
+    font-size: clamp(24px, 8vw, 36px);
+  }
+  
+  .section-title h2 {
+    font-size: 18px;
+  }
+  
+  .card {
+    padding: 16px;
+  }
+  
+  .btn {
+    padding: 10px 16px;
+    font-size: 13px;
+  }
+  
+  .form-group input,
+  .form-group select {
+    padding: 10px 12px;
+    font-size: 14px;
+  }
+}
+
+/* Touch-friendly improvements */
+@media (hover: none) and (pointer: coarse) {
+  .coin-selector-item,
+  .btn,
+  .day-item {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  .coin-selector-item:hover,
+  .btn:hover {
+    transform: none;
+  }
+  
+  .coin-selector-item:active {
+    transform: scale(0.95);
+  }
+}
+
+/* High contrast mode improvements */
+@media (prefers-contrast: high) {
+  .coin-selector-item.selected {
+    border-width: 3px;
+  }
+  
+  .btn:focus {
+    outline-width: 3px;
+  }
+  
+  .progress-bar {
+    border: 1px solid var(--text);
+  }
+}
+
+/* Reduced motion improvements */
+@media (prefers-reduced-motion: reduce) {
+  .coin-selector-item::before,
+  .btn::before,
+  .progress-fill::after {
+    animation: none !important;
+  }
+  
+  .coin-selector-item:hover,
+  .btn:hover,
+  .card:hover {
+    transform: none !important;
+  }
+}
+
+/* Print styles */
+@media print {
+  body {
+    background: white;
+    color: black;
+  }
+  
+  .btn,
+  .form-buttons,
+  .day-selector,
+  .coin-selector-grid {
+    display: none !important;
+  }
+  
+  .card {
+    border: 1px solid #ccc;
+    break-inside: avoid;
+  }
+  
+  .section {
+    break-inside: avoid;
+  }
+}
+
+/* Loading overlay */
+.loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0,0,0,0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  color: white;
+  font-size: 18px;
+  gap: 16px;
+}
+
+.loading-overlay.hidden {
+  display: none;
+}
+
+.loading-spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid rgba(255,255,255,0.3);
+  border-top: 3px solid white;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+/* Tooltip styles */
+.tooltip {
+  position: relative;
+  cursor: help;
+}
+
+.tooltip::before {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--bg2);
+  color: var(--text);
+  padding: 8px 12px;
+  border-radius: var(--border-radius-sm);
+  font-size: 12px;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s;
+  z-index: 1000;
+  margin-bottom: 4px;
+  border: 1px solid var(--border);
+}
+
+.tooltip::after {
+  content: '';
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 4px solid transparent;
+  border-top-color: var(--border);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s;
+}
+
+.tooltip:hover::before,
+.tooltip:hover::after {
+  opacity: 1;
+}
+
+/* Focus trap styles */
+.focus-trap {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* Skip link for accessibility */
+.skip-link {
+  position: absolute;
+  top: -40px;
+  left: 6px;
+  background: var(--accent);
+  color: black;
+  padding: 8px;
+  text-decoration: none;
+  border-radius: var(--border-radius-sm);
+  font-weight: bold;
+  z-index: 10000;
+}
+
+.skip-link:focus {
+  top: 6px;
+}
+
+/* Keyboard navigation indicator */
+.keyboard-nav .coin-selector-item:focus,
+.keyboard-nav .btn:focus,
+.keyboard-nav .day-item:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* Performance optimizations */
+.gpu-accelerated {
+  transform: translateZ(0);
+  will-change: transform;
+}
+
+/* Mobile menu improvements */
+@media (max-width: 768px) {
+  .form-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  
+  .overview-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+  
+  .prob-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  
+  .summary-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+}
+
+/* Dark mode enhancements */
+@media (prefers-color-scheme: dark) {
+  .success-notification {
+    background: var(--green);
+    color: var(--bg);
+  }
+  
+  .loading-overlay {
+    background: rgba(0,0,0,0.9);
+  }
+}
+
+/* Animation performance */
+.animate-optimized {
+  animation: fadeIn 0.3s ease;
+  transform: translateZ(0);
+  will-change: opacity, transform;
+}
+</style>
+</head>
+<body>
+
+<!-- Skip link for accessibility -->
+<a href="#main-content" class="skip-link">Skip to main content</a>
+
+<!-- Loading overlay -->
+<div id="loadingOverlay" class="loading-overlay hidden">
+  <div class="loading-spinner"></div>
+  <span>Loading...</span>
+</div>
+
+<div class="container" id="main-content">
+
+  <!-- HEADER -->
+  <header class="header" role="banner">
+    <a href="https://ghktech.ucoz.net/index.html" 
+       class="btn btn-secondary" 
+       style="display:inline-block;margin-bottom:16px;text-decoration:none;"
+       aria-label="Return to homepage">
+      \u2190 Return to Home
+    </a>
+    <div class="header-badge">Dynamic Financial Plan \u00b7 2026 and Beyond</div>
+    <h1>Capital Management and Investment<br>Cryptocurrency Assets Plan</h1>
+    <p>Fully Dynamic \u00b7 Choose Your Coins \u00b7 Adapts to Your Income and Risk Capacity</p>
+  </header>
+
+  <!-- INPUT FORM -->
+  <main>
+    <section class="section" aria-labelledby="form-title">
+      <div class="section-title">
+        <div class="icon" style="background:rgba(247,147,26,0.1)" aria-hidden="true">\u2699\ufe0f</div>
+        <h2 id="form-title">Enter Your Financial Profile Data</h2>
+        <div class="line"></div>
+      </div>
+      
+      <form class="input-form" novalidate aria-label="Financial information form">
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="monthlyIncome">Monthly Income (IQD)</label>
+            <input 
+              type="number" 
+              id="monthlyIncome" 
+              placeholder="e.g.: 2,000,000" 
+              min="0" 
+              max="10000000"
+              step="1000"
+              required
+              aria-describedby="monthlyIncome-help monthlyIncome-error"
+              aria-invalid="false"
+              class="tooltip"
+              data-tooltip="Enter your total monthly income before taxes"
+            >
+            <div id="monthlyIncome-help" class="sr-only">Enter your monthly income in Iraqi Dinars</div>
+          </div>
+          
+          <div class="form-group">
+            <label for="monthlyExpenses">Fixed Monthly Expenses (IQD)</label>
+            <input 
+              type="number" 
+              id="monthlyExpenses" 
+              placeholder="e.g.: 500,000" 
+              min="0" 
+              max="10000000"
+              step="1000"
+              required
+              aria-describedby="monthlyExpenses-help monthlyExpenses-error"
+              aria-invalid="false"
+              class="tooltip"
+              data-tooltip="Enter your fixed monthly expenses"
+            >
+            <div id="monthlyExpenses-help" class="sr-only">Enter your fixed monthly expenses</div>
+          </div>
+          
+          <div class="form-group">
+            <label for="currentSavings">Current Savings (IQD)</label>
+            <input 
+              type="number" 
+              id="currentSavings" 
+              placeholder="e.g.: 1,300,000" 
+              min="0" 
+              max="100000000"
+              step="1000"
+              required
+              aria-describedby="currentSavings-help currentSavings-error"
+              aria-invalid="false"
+              class="tooltip"
+              data-tooltip="Enter your current total savings"
+            >
+            <div id="currentSavings-help" class="sr-only">Enter your current savings amount</div>
+          </div>
+          
+          <div class="form-group">
+            <label for="timeHorizon">Time Horizon (years)</label>
+            <input 
+              type="number" 
+              id="timeHorizon" 
+              placeholder="e.g.: 7" 
+              min="1" 
+              max="50"
+              required
+              aria-describedby="timeHorizon-help timeHorizon-error"
+              aria-invalid="false"
+              class="tooltip"
+              data-tooltip="Investment time period in years"
+            >
+            <div id="timeHorizon-help" class="sr-only">Enter your investment time horizon</div>
+          </div>
+          
+          <div class="form-group">
+            <label for="riskTolerance">Risk Tolerance Level</label>
+            <select 
+              id="riskTolerance" 
+              required
+              aria-describedby="riskTolerance-help riskTolerance-error"
+              aria-invalid="false"
+              class="tooltip"
+              data-tooltip="Choose your risk tolerance level"
+            >
+              <option value="low">Very Conservative</option>
+              <option value="moderate" selected>Moderate</option>
+              <option value="high">Aggressive</option>
+            </select>
+            <div id="riskTolerance-help" class="sr-only">Select your risk tolerance level</div>
+          </div>
+          
+          <div class="form-group">
+            <label for="exchangeRate">Exchange Rate (Dinar/Dollar)</label>
+            <input 
+              type="number" 
+              id="exchangeRate" 
+              placeholder="e.g.: 1,500" 
+              min="1000" 
+              max="10000"
+              step="1"
+              required
+              aria-describedby="exchangeRate-help exchangeRate-error"
+              aria-invalid="false"
+              class="tooltip"
+              data-tooltip="Current exchange rate for calculations"
+            >
+            <div id="exchangeRate-help" class="sr-only">Enter current exchange rate</div>
+          </div>
+          
+          <div class="form-group">
+            <label for="investmentPct">Investment Percentage from Income</label>
+            <select 
+              id="investmentPct" 
+              required
+              aria-describedby="investmentPct-help investmentPct-error"
+              aria-invalid="false"
+              class="tooltip"
+              data-tooltip="Choose what percentage of income to invest"
+            >
+              <option value="auto">Automatic (Full Surplus)</option>
+              <option value="0.10">10% of Income</option>
+              <option value="0.15" selected>15% of Income</option>
+              <option value="0.20">20% of Income</option>
+            </select>
+            <div id="investmentPct-help" class="sr-only">Select investment percentage</div>
+          </div>
+        </div>
+        
+        <div id="investment-pct-info" 
+             class="selector-info-box" 
+             role="status" 
+             aria-live="polite">
+          \ud83d\udca1 Monthly Investment Amount: <strong id="investment-pct-preview">\u2014</strong> IQD &nbsp;\u2248&nbsp; $<span id="investment-pct-preview-usd">\u2014</span>
+        </div>
+        
+        <div class="form-buttons">
+          <button type="button" class="btn btn-primary" onclick="updatePlan()" aria-describedby="update-plan-help">
+            \ud83d\udcca Update Plan
+          </button>
+          <div id="update-plan-help" class="sr-only">Update your investment plan with current data</div>
+          
+          <button type="button" class="btn btn-secondary" onclick="loadDefaultValues()" aria-describedby="default-values-help">
+            \ud83d\udd04 Default Values
+          </button>
+          <div id="default-values-help" class="sr-only">Load default example values</div>
+          
+          <button type="button" class="btn btn-export" onclick="exportToPDF()" aria-describedby="export-pdf-help">
+            \ud83d\udce5 Download PDF
+          </button>
+          <div id="export-pdf-help" class="sr-only">Export plan as PDF file</div>
+          
+          <button type="button" class="btn btn-export" onclick="exportToExcel()" aria-describedby="export-excel-help">
+            \ud83d\udcca Download Excel
+          </button>
+          <div id="export-excel-help" class="sr-only">Export plan as Excel file</div>
+        </div>
+      </form>
+    </section>
+
+    <!-- COIN SELECTOR SECTION -->
+    <section class="section" aria-labelledby="coin-selector-title">
+      <div class="section-title">
+        <div class="icon" style="background:rgba(153,69,255,0.12)" aria-hidden="true">\ud83e\ude99</div>
+        <h2 id="coin-selector-title">Choose Coins to Invest In</h2>
+        <div class="line"></div>
+      </div>
+      
+      <div class="card" style="padding:24px">
+        <p style="font-size:13px;color:var(--text2);margin-bottom:18px">
+          Click on a coin to activate or deactivate \u2014 percentages are automatically redistributed based on each selected coin's strength
+        </p>
+        
+        <div 
+          class="coin-selector-grid" 
+          id="coinSelectorGrid" 
+          role="list" 
+          aria-label="Cryptocurrency selection"
+        ></div>
+        
+        <div class="selector-info-box" role="status" aria-live="polite">
+          <span>\ud83d\udccc Selected Coins:</span>
+          <strong id="selectedCoinCount">0</strong>
+          <span style="margin:0 4px">\u00b7</span>
+          <span>Crypto Percentage from Investment:</span>
+          <strong id="cryptoTotalPct">0%</strong>
+          <span style="margin:0 4px">\u00b7</span>
+          <span>USDT Reserve:</span>
+          <strong id="usdtReservePct">0%</strong>
+          <span style="color:var(--text3);font-size:11px;margin-right:auto">* Percentages shown from total investment amount</span>
+        </div>
+        
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
+          <button type="button" class="btn btn-secondary" onclick="selectAllCoins()" aria-describedby="select-all-help">
+            \u2713 Select All
+          </button>
+          <div id="select-all-help" class="sr-only">Select all available cryptocurrencies</div>
+          
+          <button type="button" class="btn btn-secondary" onclick="selectDefaultCoins()" aria-describedby="select-default-help">
+            \u2b50 Default (BTC+ETH+SOL+LINK)
+          </button>
+          <div id="select-default-help" class="sr-only">Select default cryptocurrency portfolio</div>
+          
+          <button type="button" class="btn btn-secondary" style="color:var(--red);border-color:var(--red)" onclick="clearAllCoins()" aria-describedby="clear-all-help">
+            \u2717 Clear All
+          </button>
+          <div id="clear-all-help" class="sr-only">Clear all cryptocurrency selections</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- OVERVIEW SECTION -->
+    <section class="section" aria-labelledby="overview-title">
+      <div class="section-title">
+        <div class="icon" style="background:rgba(247,147,26,0.1)" aria-hidden="true">\ud83d\udcca</div>
+        <h2 id="overview-title">Current Financial Picture</h2>
+        <div class="line"></div>
+      </div>
+      
+      <div class="overview-grid" role="list">
+        <div class="stat-card" role="listitem">
+          <div class="label">Monthly Income</div>
+          <div class="value" id="stat-income">+2M</div>
+          <div class="sub">Iraqi Dinar</div>
+          <div class="sub" style="color:var(--green);font-size:12px;margin-top:4px">\u2248 $<span id="stat-income-usd">1,527</span></div>
+        </div>
+        
+        <div class="stat-card" role="listitem">
+          <div class="label">Fixed Monthly Expenses</div>
+          <div class="value" style="color:var(--red)" id="stat-expenses">500K</div>
+          <div class="sub">Iraqi Dinar</div>
+          <div class="sub" style="color:var(--red);font-size:12px;margin-top:4px">\u2248 $<span id="stat-expenses-usd">382</span></div>
+        </div>
+        
+        <div class="stat-card" role="listitem">
+          <div class="label">Monthly Investment Amount</div>
+          <div class="value" style="color:var(--accent)" id="monthly-investment">1.5M</div>
+          <div class="sub">Iraqi Dinar</div>
+          <div class="sub" style="color:var(--accent);font-size:12px;margin-top:4px">\u2248 $<span id="stat-investment-usd">1,145</span></div>
+        </div>
+        
+        <div class="stat-card" role="listitem">
+          <div class="label">Liquid Reserve (USDT)</div>
+          <div class="value" style="color:var(--accent5)" id="stat-emergency">\u2014</div>
+          <div class="sub">Iraqi Dinar \u00b7 10% Fixed</div>
+          <div class="sub" style="color:var(--accent5);font-size:12px;margin-top:4px">\u2248 $<span id="stat-emergency-usd">\u2014</span></div>
+        </div>
+        
+        <div class="stat-card" role="listitem">
+          <div class="label">Current Savings</div>
+          <div class="value" id="stat-savings">5M</div>
+          <div class="sub">Iraqi Dinar</div>
+          <div class="sub" style="color:var(--accent2);font-size:12px;margin-top:4px">\u2248 $<span id="stat-savings-usd">3,817</span></div>
+        </div>
+        
+        <div class="stat-card" role="listitem">
+          <div class="label">Time Horizon</div>
+          <div class="value" style="color:var(--accent3);font-size:16px" id="stat-horizon">7 years</div>
+          <div class="sub">Plan Duration</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ALLOCATION SECTION -->
+    <section class="section" aria-labelledby="allocation-title">
+      <div class="section-title">
+        <div class="icon" style="background:rgba(0,211,149,0.1)" aria-hidden="true">\ud83d\udcb0</div>
+        <h2 id="allocation-title">Monthly Surplus Distribution</h2>
+        <div class="line"></div>
+      </div>
+      
+      <div class="card">
+        <table class="alloc-table" role="table" aria-label="Investment allocation breakdown">
+          <thead>
+            <tr>
+              <th scope="col">Category / Fund</th>
+              <th scope="col">Percentage</th>
+              <th scope="col">Monthly Amount</th>
+              <th scope="col">In Dollars</th>
+              <th scope="col">Allocation</th>
+            </tr>
+          </thead>
+          <tbody id="alloc-tbody">
+          </tbody>
+        </table>
+      </div>
+      
+      <div id="emergency-alert" class="alert-box info" style="margin-top:16px" role="alert">
+        <div class="alert-icon" aria-hidden="true">\ud83d\udca1</div>
+        <div class="alert-text">
+          The <strong>10% USDT</strong> reserve is a permanent liquid reserve \u2014 used for buying during sharp declines or sudden opportunities
+        </div>
+      </div>
+    </section>
+
+    <!-- CURRENCY CONVERTER SECTION -->
+    <section class="section" aria-labelledby="converter-title">
+      <div class="section-title">
+        <div class="icon" style="background:rgba(0,211,149,0.1)" aria-hidden="true">\ud83d\udcb1</div>
+        <h2 id="converter-title">Quick Conversion Calculator</h2>
+        <div class="line"></div>
+      </div>
+      
+      <div class="card converter-grid">
+        <div class="converter-item dinar">
+          <div class="converter-label">Amount in Dinars</div>
+          <input 
+            type="number" 
+            id="converterDinar" 
+            value="1000000" 
+            min="0" 
+            placeholder="Enter amount" 
+            class="converter-input"
+            onchange="convertToDollar()" 
+            oninput="convertToDollar()"
+            aria-describedby="converter-dinar-help"
+          >
+          <div class="converter-suffix">IQD</div>
+          <div id="converter-dinar-help" class="sr-only">Enter amount in Iraqi Dinars to convert</div>
+        </div>
+        
+        <div class="converter-item dollar">
+          <div class="converter-label">Amount in Dollars</div>
+          <div class="converter-value" id="converterDollar">763.36</div>
+          <div class="converter-suffix">$</div>
+        </div>
+        
+        <div class="converter-item rate">
+          <div class="converter-label">Current Rate</div>
+          <div class="converter-value" id="currentRate">1,310</div>
+          <div class="converter-suffix">IQD / $</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- RISK ANALYSIS SECTION -->
+    <section class="section" aria-labelledby="risk-title">
+      <div class="section-title">
+        <div class="icon" style="background:rgba(98,126,234,0.1)" aria-hidden="true">\ud83e\uddee</div>
+        <h2 id="risk-title">Probability Analysis \u2014 Is It Worth the Risk?</h2>
+        <div class="line"></div>
+      </div>
+      
+      <div id="risk-verdict" class="alert-box info" style="margin-bottom:20px" role="alert">
+        <div class="alert-icon" aria-hidden="true">\u2705</div>
+        <div class="alert-text"><strong id="risk-text">Direct Answer: Yes, absolutely worth it \u2014 and strongly.</strong></div>
+      </div>
+      
+      <div class="prob-grid" id="prob-grid-dynamic" role="list"></div>
+      
+      <div class="card" style="margin-top:20px">
+        <div style="font-size:13px;font-weight:700;color:var(--text2);margin-bottom:16px;letter-spacing:1px">
+          Expected Returns by Scenario
+        </div>
+        <table class="scenario-table" role="table" aria-label="Return scenarios by cryptocurrency">
+          <thead>
+            <tr>
+              <th scope="col">Currency</th>
+              <th scope="col">Probability</th>
+              <th scope="col">Conservative Scenario</th>
+              <th scope="col">Moderate Scenario</th>
+              <th scope="col">Optimistic Scenario</th>
+            </tr>
+          </thead>
+          <tbody id="scenario-tbody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- SUMMARY REPORT SECTION -->
+    <section class="section" aria-labelledby="summary-title">
+      <div class="section-title">
+        <div class="icon" style="background:rgba(0,211,149,0.1)" aria-hidden="true">\ud83d\udcc8</div>
+        <h2 id="summary-title">Financial Expectations Summary</h2>
+        <div class="line"></div>
+      </div>
+      
+      <div class="summary-box">
+        <div class="summary-title">Growth Expectations Over Time Horizon</div>
+        <div class="summary-grid">
+          <div class="summary-item">
+            <div class="s-label">Total Annual Investment</div>
+            <div class="s-value" id="yearly-investment">9.9M</div>
+          </div>
+          <div class="summary-item">
+            <div class="s-label">Investment Over Plan Duration</div>
+            <div class="s-value" id="total-invested">69.3M</div>
+          </div>
+          <div class="summary-item">
+            <div class="s-label">Conservative Scenario</div>
+            <div class="s-value" style="color:var(--green)" id="scenario-conservative">69.3M</div>
+          </div>
+          <div class="summary-item">
+            <div class="s-label">Moderate Scenario</div>
+            <div class="s-value" style="color:var(--accent)" id="scenario-moderate">693M</div>
+          </div>
+          <div class="summary-item">
+            <div class="s-label">Optimistic Scenario</div>
+            <div class="s-value" style="color:var(--gold)" id="scenario-optimistic">1.38B</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- RULES SECTION -->
+    <section class="section" aria-labelledby="rules-title">
+      <div class="section-title">
+        <div class="icon" style="background:rgba(255,77,77,0.1)" aria-hidden="true">\ud83d\udd12</div>
+        <h2 id="rules-title">Strict Rules \u2014 Never Break</h2>
+        <div class="line"></div>
+      </div>
+      
+      <div class="rules-grid" role="list">
+        <div class="rule-item" role="listitem">
+          <div class="rule-num">1</div>
+          <div class="rule-text">
+            <strong>Liquid Reserve (USDT 10%) is a red line.</strong> Never touch it except for buying sharp declines or real emergencies like illness or income loss.
+          </div>
+        </div>
+        
+        <div class="rule-item" role="listitem">
+          <div class="rule-num">2</div>
+          <div class="rule-text">
+            <strong>Never invest with debt.</strong> You only invest from real surplus.
+          </div>
+        </div>
+        
+        <div class="rule-item" role="listitem">
+          <div class="rule-num">3</div>
+          <div class="rule-text">
+            <strong>Regular DCA regardless of market.</strong> Discipline is the secret.
+          </div>
+        </div>
+        
+        <div class="rule-item" role="listitem">
+          <div class="rule-num">4</div>
+          <div class="rule-text">
+            <strong>No selling before 2029.</strong> Bitcoin at least \u2014 assets need a full cycle.
+          </div>
+        </div>
+        
+        <div class="rule-item" role="listitem">
+          <div class="rule-num">5</div>
+          <div class="rule-text">
+            <strong>-60% rule for Altcoins.</strong> If drops more than 60% \u2192 seriously reconsider decision.
+          </div>
+        </div>
+        
+        <div class="rule-item" role="listitem">
+          <div class="rule-num">6</div>
+          <div class="rule-text">
+            <strong>3x rule for profits.</strong> When any Altcoin reaches 3x \u2192 take out original capital.
+          </div>
+        </div>
+        
+        <div class="rule-item" role="listitem">
+          <div class="rule-num">7</div>
+          <div class="rule-text">
+            <strong>Rebalance every 6 months only.</strong> Don't review portfolio weekly.
+          </div>
+        </div>
+        
+        <div class="rule-item" role="listitem">
+          <div class="rule-num">8</div>
+          <div class="rule-text">
+            <strong>Store in Cold Wallet.</strong> Any amount you don't actively trade should be in your cold wallet.
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- STRATEGY SECTION -->
+    <section class="section" aria-labelledby="strategy-title">
+      <div class="section-title">
+        <div class="icon" style="background:rgba(0,211,149,0.1)" aria-hidden="true">\ud83d\udcc8</div>
+        <h2 id="strategy-title">Entry Strategy for First Months</h2>
+        <div class="line"></div>
+      </div>
+      
+      <div class="card">
+        <div style="display:flex;flex-direction:column;gap:16px">
+          <div style="display:flex;gap:16px;align-items:flex-start">
+            <div style="width:32px;height:32px;border-radius:50%;background:rgba(0,211,149,0.15);border:2px solid var(--green);color:var(--green);font-weight:900;font-size:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-family:'Rajdhani'">1</div>
+            <div>
+              <div style="font-weight:700;margin-bottom:4px">First Month \u2014 Start Now</div>
+              <div style="font-size:13px;color:var(--text2)">Buy 25-30% of each coin's allocation at current prices.</div>
+            </div>
+          </div>
+          
+          <div style="display:flex;gap:16px;align-items:flex-start">
+            <div style="width:32px;height:32px;border-radius:50%;background:rgba(247,147,26,0.15);border:2px solid var(--accent);color:var(--accent);font-weight:900;font-size:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-family:'Rajdhani'">2</div>
+            <div>
+              <div style="font-weight:700;margin-bottom:4px">If Market Drops \u2014 Opportunity</div>
+              <div style="font-size:13px;color:var(--text2)">Add 40% of allocation at optimal levels.</div>
+            </div>
+          </div>
+          
+          <div style="display:flex;gap:16px;align-items:flex-start">
+            <div style="width:32px;height:32px;border-radius:50%;background:rgba(255,215,0,0.1);border:2px solid var(--gold);color:var(--gold);font-weight:900;font-size:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-family:'Rajdhani'">3</div>
+            <div>
+              <div style="font-weight:700;margin-bottom:4px">Golden Levels \u2014 Double Down</div>
+              <div style="font-size:13px;color:var(--text2)">If we reach golden levels \u2014 buy strong.</div>
+            </div>
+          </div>
+          
+          <div style="display:flex;gap:16px;align-items:flex-start">
+            <div style="width:32px;height:32px;border-radius:50%;background:rgba(98,126,234,0.15);border:2px solid var(--accent2);color:var(--accent2);font-weight:900;font-size:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-family:'Rajdhani'">4</div>
+            <div>
+              <div style="font-weight:700;margin-bottom:4px">If Market Rises \u2014 Normal DCA</div>
+              <div style="font-size:13px;color:var(--text2)">Continue regular monthly buying without change.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CHARTS SECTION -->
+    <section class="section" aria-labelledby="charts-title">
+      <div class="section-title">
+        <div class="icon" style="background:rgba(98,126,234,0.1)" aria-hidden="true">\ud83d\udcc8</div>
+        <h2 id="charts-title">Portfolio and Coin Distribution</h2>
+        <div class="line"></div>
+      </div>
+      
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(350px,1fr));gap:24px;margin-top:24px">
+        <div class="card" style="padding:20px;height:400px">
+          <h3 style="margin-bottom:16px;font-size:16px;color:var(--accent2)">\ud83d\udcca Portfolio Distribution</h3>
+          <canvas id="portfolioChart" style="max-height:320px" aria-label="Portfolio distribution chart"></canvas>
+        </div>
+      </div>
+    </section>
+
+    <!-- CALENDAR SECTION -->
+    <section class="section" aria-labelledby="calendar-title">
+      <div class="section-title">
+        <div class="icon" style="background:rgba(247,147,26,0.1)" aria-hidden="true">\ud83d\udcc5</div>
+        <h2 id="calendar-title">Monthly Investment Distribution</h2>
+        <div class="line"></div>
+      </div>
+      
+      <div class="card">
+        <p style="margin-bottom:20px;color:var(--text2);font-size:13px">
+          Choose the days you want to invest from each month
+        </p>
+        
+        <div class="day-selector" id="daySelector" role="group" aria-label="Investment days selection"></div>
+        
+        <div style="margin-bottom:16px;display:flex;gap:12px;flex-wrap:wrap">
+          <button type="button" class="btn btn-secondary" onclick="selectAllDays()" aria-describedby="select-all-days-help">
+            \u2713 Select All
+          </button>
+          <div id="select-all-days-help" class="sr-only">Select all days of the month</div>
+          
+          <button type="button" class="btn btn-secondary" onclick="clearAllDays()" aria-describedby="clear-all-days-help">
+            \u2717 Clear All
+          </button>
+          <div id="clear-all-days-help" class="sr-only">Clear all day selections</div>
+          
+          <button type="button" class="btn btn-secondary" onclick="selectCommonDays()" aria-describedby="select-common-days-help">
+            \ud83d\udccc Common Days (1-10-20)
+          </button>
+          <div id="select-common-days-help" class="sr-only">Select common investment days</div>
+        </div>
+        
+        <div id="investmentCalendar" style="overflow-x:auto">
+          <table class="alloc-table" style="margin-bottom:20px" role="table" aria-label="Monthly investment calendar">
+            <thead><tr id="calendarHeader"></tr></thead>
+            <tbody id="calendarBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- WARNINGS SECTION -->
+    <section class="section" aria-labelledby="warnings-title">
+      <div class="section-title">
+        <div class="icon" style="background:rgba(255,77,77,0.1)" aria-hidden="true">\u26a1</div>
+        <h2 id="warnings-title">Market Alerts and Current Data</h2>
+        <div class="line"></div>
+      </div>
+      
+      <div class="alert-box warning" role="alert">
+        <div class="alert-icon" aria-hidden="true">\ud83c\udf0d</div>
+        <div class="alert-text">
+          <strong>American Inflation:</strong> Rose to highest level in two years in March 2026. Pressures market short-term \u2014 but strengthens Bitcoin as long-term store of value.
+        </div>
+      </div>
+      
+      <div class="alert-box note" role="alert">
+        <div class="alert-icon" aria-hidden="true">\ud83d\udcca</div>
+        <div class="alert-text">
+          <strong>Fear & Greed Index = 15 (Extreme Fear):</strong> Historically, entering during extreme fear gave best returns over 12-18 months.
+        </div>
+      </div>
+      
+      <div class="alert-box info" role="alert">
+        <div class="alert-icon" aria-hidden="true">\ud83d\udd17</div>
+        <div class="alert-text">
+          <strong>Chainlink ETF on NYSE Arca:</strong> Launch of Bitwise Chainlink ETF (CLINK) in 2025 opens door to institutional flows.
+        </div>
+      </div>
+      
+      <div class="alert-box warning" role="alert">
+        <div class="alert-icon" aria-hidden="true">\u26a0\ufe0f</div>
+        <div class="alert-text">
+          <strong>Solana Warning:</strong> SOL has suffered technical collapses in the past. Diversification to reduce risk is important.
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer" role="contentinfo">
+    <div style="margin-bottom:8px">This plan is for educational and personal planning purposes only \u2014 not licensed financial advice</div>
+    <div>Last updated: <span id="last-update">April 2026</span></div>
+  </footer>
+</div>
+
+<!-- Improved JavaScript Structure -->
+<script type="module" src="js/app.js"></script>
+
+<!-- Fallback for browsers that don't support modules -->
+<script nomodule>
+  console.warn('ES6 modules are not supported in this browser. Please upgrade to a modern browser.');
+  document.getElementById('loadingOverlay').classList.remove('hidden');
+  document.getElementById('loadingOverlay').innerHTML = `
+    <div style="text-align: center; max-width: 400px;">
+      <h2 style="color: var(--accent); margin-bottom: 16px;">Browser Not Supported</h2>
+      <p style="margin-bottom: 16px;">This application requires a modern browser that supports ES6 modules.</p>
+      <p>Please upgrade to the latest version of Chrome, Firefox, Safari, or Edge.</p>
+    </div>
+  `;
+</script>
+
+<!-- Service Worker Registration for PWA support -->
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js')
+      .then((registration) => {
+        console.log('SW registered: ', registration);
+      })
+      .catch((registrationError) => {
+        console.log('SW registration failed: ', registrationError);
+      });
+  });
+}
+</script>
+
+<!-- Performance monitoring -->
+<script>
+if ('performance' in window) {
+  window.addEventListener('load', () => {
+    const perfData = performance.getEntriesByType('navigation')[0];
+    console.log('Page Load Time:', perfData.loadEventEnd - perfData.loadEventStart, 'ms');
+  });
+}
+</script>
+
+<!-- Error handling -->
+<script>
+window.addEventListener('error', (event) => {
+  console.error('JavaScript error:', event.error);
+  // You could send this to an error tracking service
+});
+
+window.addEventListener('unhandledrejection', (event) => {
+  console.error('Unhandled promise rejection:', event.reason);
+  // You could send this to an error tracking service
+});
+</script>
+
+</body>
+</html>
