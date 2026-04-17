@@ -2,8 +2,6 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
-<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-<meta http-equiv="Content-Language" content="ar">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>خطة الاستثمار المالية — ديناميكية</title>
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
@@ -34,7 +32,7 @@
     --gold: #ffd700;
   }
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { background: var(--bg); color: var(--text); font-family: 'Cairo', 'Tahoma', 'Arial', sans-serif; min-height: 100vh; overflow-x: hidden; line-height: 1.8; text-rendering: optimizeLegibility; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+  body { background: var(--bg); color: var(--text); font-family: 'Cairo', sans-serif; min-height: 100vh; overflow-x: hidden; }
   body::before { content: ''; position: fixed; inset: 0; background: radial-gradient(ellipse 80% 40% at 20% 10%, rgba(247,147,26,0.06) 0%, transparent 60%), radial-gradient(ellipse 60% 40% at 80% 80%, rgba(98,126,234,0.06) 0%, transparent 60%), radial-gradient(ellipse 40% 30% at 50% 50%, rgba(0,211,149,0.03) 0%, transparent 60%); pointer-events: none; z-index: 0; }
   .container { max-width: 1280px; margin: 0 auto; padding: 48px 48px; position: relative; z-index: 1; }
   @media (max-width: 768px) { .container { padding: 24px 16px; } }
@@ -228,54 +226,6 @@
   ::-webkit-scrollbar-track { background: var(--bg); }
   ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
   .hidden { display: none; }
-/* Arabic encoding and RTL fixes */
-  .arabic-text {
-    font-family: 'Cairo', 'Tahoma', 'Arial', sans-serif;
-    text-align: right;
-    direction: rtl;
-    unicode-bidi: embed;
-  }
-  
-  .english-text {
-    font-family: 'Rajdhani', 'Arial', sans-serif;
-    text-align: left;
-    direction: ltr;
-  }
-  
-  .rtl-text {
-    direction: rtl;
-    unicode-bidi: embed;
-  }
-  
-  .arabic-ligatures {
-    text-rendering: optimizeLegibility;
-    font-feature-settings: "liga", "clig";
-  }
-  
-  /* Error message Arabic support */
-  .error-message {
-    font-family: 'Cairo', 'Tahoma', 'Arial', sans-serif;
-  }
-  
-  /* Loading overlay Arabic support */
-  .loading-overlay {
-    font-family: 'Cairo', 'Tahoma', 'Arial', sans-serif;
-  }
-  
-  /* Tooltip Arabic support */
-  .tooltip::before {
-    font-family: 'Cairo', 'Tahoma', 'Arial', sans-serif;
-  }
-  
-  /* Skip link Arabic support */
-  .skip-link {
-    font-family: 'Cairo', 'Tahoma', 'Arial', sans-serif;
-  }
-  
-  /* Success notification Arabic support */
-  .success-notification {
-    font-family: 'Cairo', 'Tahoma', 'Arial', sans-serif;
-  }
 </style>
 </head>
 <body>
